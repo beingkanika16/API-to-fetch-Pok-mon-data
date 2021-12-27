@@ -9,22 +9,26 @@ import Grid from "@mui/material/Grid";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 export default function App() {
-	const url = "https://api.pokemontcg.io/v2/cards?page=1&pageSize=10";
 	const [cardData, setCardData] = React.useState([]);
+
+	const [id, setId] = React.useState(1);
+	let list
 	let load;
 	const loadData = () => {
-		fetch(url)
+		fetch(`https://api.pokemontcg.io/v2/cards?page=${id}&pageSize=10`)
 			.then((response) => {
+				console.log(response);
 				return response.json();
 			})
 			.then((dat) => {
-				let list = [...cardData, ...dat.data];
+	list = [...cardData, ...dat.data];
 				setCardData(list);
 				load = dat.totalCount;
-				console.log("data", load);
+				setId(dat.page +1)
+				console.log("data", dat);
 			})
 			.catch((error) => {
-				console.log("error while trying to retrieve data");
+				console.log("error while trying to retrieve data", error);
 			});
 	};
 
@@ -35,11 +39,11 @@ export default function App() {
 		<div className="App">
 			<Card >
 				<InfiniteScroll
-					dataLength={loadData}
+					dataLength={cardData.length}
 					hasMore={true || false}
 					pageStart={0}
 					useWindow={false}
-					next={loadData}
+					next={id<10 ? ()=>loadData(id): ''}
 					endMessage={
 						<p style={{ textAlign: "center" }}>
 							<b>Yay! You have seen it all</b>
@@ -49,7 +53,7 @@ export default function App() {
 				>
 					<Grid container spacing={2}>
 						{" "}
-						{cardData.map((card) => (
+						{cardData && cardData.map((card) => (
 							<Grid item xs={2} sm={4} md={4}>
 								<Card sx={{ maxWidth: 300 }}>
 									<CardMedia
@@ -97,7 +101,7 @@ export default function App() {
 													style={{ textAlign: "right" }}
 													color="text.secondary"
 												>
-													{card.attacks.map((data) => data.name)}
+													{card && card.attacks.map((data) => data.name)}
 												</Typography>
 											</Grid>
 										</Grid>
@@ -139,7 +143,7 @@ export default function App() {
 													variant="body2"
 													color="text.secondary"
 												>
-													{card.attacks.map((data) => data.name)}
+													{card && card.attacks.map((data) => data.name)}
 												</Typography>
 											</Grid>
 										</Grid>
